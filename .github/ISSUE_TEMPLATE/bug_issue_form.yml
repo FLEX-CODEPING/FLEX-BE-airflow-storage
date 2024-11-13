@@ -1,0 +1,52 @@
+name: 'Bug 이슈 생성'
+description: '버그에 대한 이슈를 생성합니다.'
+labels: [order]
+title: '버그 이슈 제목을 입력해주세요.'
+body:
+  - type: input
+    id: parentKey
+    attributes:
+      label: '🏷️ Bug 상위 작업 Ticket Number'
+      description: '상위 작업의 Ticket Number를 기입해주세요.'
+      placeholder: 'FLEX-00'
+    validations:
+      required: true
+
+  - type: input
+    id: description
+    attributes:
+      label: '🐛 이슈 내용(Description)'
+      description: '이슈에 대해서 간략히 설명해주세요.'
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: '📝 상세 내용(Details)'
+      description: '이슈에 대해서 자세히 설명해주세요.'
+      value: |
+        - About Details
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: '🪄 세부사항(Tasks)'
+      description: '해당 이슈에 대해 필요한 작업 목록 등이 있다면 작성해주세요.'
+      value: |
+        - [ ] Task1
+        - [ ] Task2
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: '🔗 참조(References)'
+      description: '해당 이슈과 관련된 레퍼런스를 참조해주세요.'
+      value: |
+        - Reference1
+    validations:
+      required: false
