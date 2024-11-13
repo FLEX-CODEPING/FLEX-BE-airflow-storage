@@ -63,6 +63,7 @@ fsspec==2024.10.0
 google-re2==1.1.20240702
 googleapis-common-protos==1.65.0
 graphviz==0.20.3
+greenlet==3.1.1
 grpcio==1.65.5
 gunicorn==23.0.0
 h11==0.14.0
@@ -98,7 +99,7 @@ methodtools==0.4.7
 more-itertools==10.5.0
 multidict==6.1.0
 multipledispatch==1.0.0
-numpy==2.0.2
+numpy==1.23.5
 openapi-schema-validator==0.2.3
 openapi-spec-validator==0.4.0
 opentelemetry-api==1.27.0
@@ -111,7 +112,7 @@ opentelemetry-sdk==1.27.0
 opentelemetry-semantic-conventions==0.48b0
 ordered-set==4.1.0
 packaging==24.1
-pandas==2.2.3
+pandas==1.5.3
 pathspec==0.12.1
 pendulum==3.0.0
 pillow==11.0.0
@@ -126,6 +127,7 @@ pydantic_core==2.23.4
 Pygments==2.18.0
 PyJWT==2.9.0
 pykrx==1.0.48
+PyMySQL==1.1.1
 pyparsing==3.2.0
 pyrsistent==0.20.0
 python-daemon==3.1.0
@@ -152,12 +154,14 @@ SQLAlchemy-JSONField==1.0.2
 SQLAlchemy-Utils==0.41.2
 sqlparse==0.5.1
 starlette==0.41.2
+svgwrite==1.4.3
 swagger-ui-bundle==0.0.9
 tabulate==0.9.0
 tenacity==8.5.0
 termcolor==2.5.0
 text-unidecode==1.3
 time-machine==2.16.0
+Tree==0.2.4
 typing_extensions==4.12.2
 tzdata==2024.2
 uc-micro-py==1.0.3

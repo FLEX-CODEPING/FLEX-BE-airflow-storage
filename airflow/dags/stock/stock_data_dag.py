@@ -35,15 +35,15 @@ def get_tickers_and_return(**kwargs):
 
 def collect_ohlcv_with_tickers(**kwargs):
     kor_ticker_list = kwargs['ti'].xcom_pull(key='kor_ticker_list', task_ids='get_ticker_list')
-    collect_ohlcv_data(kor_ticker_list, kwargs['start_date'], kwargs['today_date1'])
+    collect_ohlcv_data(kor_ticker_list)
 
 def collect_market_cap_with_tickers(**kwargs):
     kor_ticker_list = kwargs['ti'].xcom_pull(key='kor_ticker_list', task_ids='get_ticker_list')
-    collect_market_cap_data(kor_ticker_list, kwargs['start_date'], kwargs['today_date1'])
+    collect_market_cap_data(kor_ticker_list)
 
 def collect_fundamental_with_tickers(**kwargs):
     kor_ticker_list = kwargs['ti'].xcom_pull(key='kor_ticker_list', task_ids='get_ticker_list')
-    collect_fundamental_data(kor_ticker_list, kwargs['start_date'], kwargs['today_date1'])
+    collect_fundamental_data(kor_ticker_list)
 
 with DAG(
     dag_id='data_collection_and_loading_dag',
