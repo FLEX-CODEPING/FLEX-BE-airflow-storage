@@ -3,10 +3,10 @@ import sqlalchemy
 from sqlalchemy import types
 import os
 import sys
-
+from .database_connection import get_database_connection
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 from date_util import get_dated_filename
-from database_connection import get_database_connection
+
 
 
 def load_csv_to_mysql():
@@ -38,8 +38,8 @@ def load_ohlcv_data(mysql_engine, data_stock_path):
         ohlcv_df = pd.read_csv(ohlcv_csv_path)
 
         ohlcv_df.rename(columns={
-            '날짜': 'date', '시가': 'open', '고가': 'high', '저가': 'low',
-            '종가': 'close', '거래량': 'volume', '등락률': 'change_rate', '종목코드': 'stockcode'
+            '날짜': 'date', '시가': 'open_price', '고가': 'high_price', '저가': 'low_price',
+            '종가': 'close_price', '거래량': 'volume', '등락률': 'change_rate', '종목코드': 'stockcode'
         }, inplace=True)
         
         ohlcv_df['date'] = pd.to_datetime(ohlcv_df['date'], errors='coerce')
@@ -50,8 +50,8 @@ def load_ohlcv_data(mysql_engine, data_stock_path):
             if_exists='append',
             index=False,
             dtype={
-                'date': types.Date(), 'open': types.Float(), 'high': types.Float(),
-                'low': types.Float(), 'close': types.Float(), 'volume': types.BigInteger(),
+                'date': types.Date(), 'open_price': types.Float(), 'high_price': types.Float(),
+                'low_price': types.Float(), 'close_price': types.Float(), 'volume': types.BigInteger(),
                 'change_rate': types.Float(), 'stockcode': types.String(50)
             }
         )

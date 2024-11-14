@@ -13,7 +13,7 @@ from modules.stock.stock_data_collection import (
     collect_market_cap_data,
     collect_fundamental_data,
 )
-from modules.stock.database_connection import load_csv_to_mysql
+from modules.stock.stock_data_loader import load_csv_to_mysql
 
 local_tz = pendulum.timezone("Asia/Seoul")
 now = pendulum.now("Asia/Seoul") 
