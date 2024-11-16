@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 load_dotenv()
 
 # 환경 변수 가져오기
-DATABASE_USER = os.getenv('DATABASE_USER')
+DATABASE_USER = os.getenv('DATABASE_USERNAME')
 DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
 DATABASE_HOST = os.getenv('DATABASE_HOST')
 DATABASE_PORT = os.getenv('DATABASE_PORT')
