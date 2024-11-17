@@ -7,7 +7,7 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from modules.stock.stock_data_collection import (
+from modules.stock.stock_data_collector import (
     get_ticker_list,
     collect_ohlcv_data,
     collect_market_cap_data,
@@ -21,7 +21,7 @@ from date_util import is_weekday_and_not_holiday, get_date
 local_tz = pendulum.timezone("Asia/Seoul")
 now = pendulum.now("Asia/Seoul") 
 today_date = get_date()
-start_date = pendulum.datetime(2024, 11, 1, tz="Asia/Seoul")
+start_date = now.subtract(days=1)
 
 default_args = {
     'owner': 'airflow',
