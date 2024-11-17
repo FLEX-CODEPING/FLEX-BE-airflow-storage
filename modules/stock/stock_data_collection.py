@@ -6,11 +6,11 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 
-from date_util import get_dated_filename
+from date_util import get_dated_filename, get_date
 
-def save_to_csv(df, file_name):
+def save_to_csv(df, file_name, date):
     current_dir = os.path.dirname(__file__)
-    data_stock_path = os.path.join(current_dir, '..', '..', 'data', 'stock')
+    data_stock_path = os.path.join(current_dir, '..', '..', 'data', 'stock', date)
     if not os.path.exists(data_stock_path):
         os.makedirs(data_stock_path)
 
@@ -18,6 +18,9 @@ def save_to_csv(df, file_name):
     file_path = os.path.join(data_stock_path, dated_file_name)
     df.to_csv(file_path, index=False, mode='w')
     print(f"Data saved to {file_path}")
+
+import pandas as pd
+from datetime import datetime
 
 def get_ticker_list():
     """KOSPI와 KOSDAQ의 종목 리스트를 가져오는 함수."""
@@ -27,20 +30,24 @@ def get_ticker_list():
 
     for market_nm in market_list:
         ticker_list = stock.get_market_ticker_list(today_date, market=market_nm)
+        print(f'{market_nm} ticker list: {ticker_list}')
+        
         for stockcode in ticker_list:
             corp_name = stock.get_market_ticker_name(stockcode)
+            print(f'Processing stockcode: {stockcode}, corp_name: {corp_name}')
+            
             df = pd.DataFrame({'stockcode': stockcode, 'corp_name': corp_name, 'market': market_nm}, index=[0])
-            kor_ticker_list_df = pd.concat([kor_ticker_list_df, df])
+            kor_ticker_list_df = pd.concat([kor_ticker_list_df, df], ignore_index=True)
 
     return kor_ticker_list_df.reset_index(drop=True)
 
 def collect_ohlcv_data(kor_ticker_list):
     """종목별 OHLCV 데이터를 수집하는 함수."""
-    today_date = datetime.now().strftime('%Y%m%d')
+    today_date = get_date()
     file_name = 'kor_stock_ohlcv'
     all_data = pd.DataFrame()
 
-    for stockcode in kor_ticker_list:
+    for stockcode in kor_ticker_list:  # 'stockcode' 컬럼이 아니라 직접 리스트에서 반복
         try:
             df_raw = stock.get_market_ohlcv(today_date, today_date, stockcode)
             df_raw = df_raw.reset_index()
@@ -50,11 +57,11 @@ def collect_ohlcv_data(kor_ticker_list):
         except Exception as e:
             print(f'{stockcode} OHLCV fail: {str(e)}')
 
-    save_to_csv(all_data, file_name)
+    save_to_csv(all_data, file_name, today_date) 
 
 def collect_market_cap_data(kor_ticker_list):
     """종목별 시가총액 데이터를 수집하는 함수."""
-    today_date = datetime.now().strftime('%Y%m%d')
+    today_date = get_date()
     file_name = 'kor_market_cap'
     all_data = pd.DataFrame()
 
@@ -68,11 +75,11 @@ def collect_market_cap_data(kor_ticker_list):
         except Exception as e:
             print(f'{ticker_nm} market cap fail: {str(e)}')
 
-    save_to_csv(all_data, file_name)
+    save_to_csv(all_data, file_name, today_date)
 
 def collect_fundamental_data(kor_ticker_list):
     """종목별 기본 재무 데이터를 수집하는 함수."""
-    today_date = datetime.now().strftime('%Y%m%d')
+    today_date = get_date()
     file_name = 'kor_stock_fundamental'
     all_data = pd.DataFrame()
 
@@ -86,4 +93,8 @@ def collect_fundamental_data(kor_ticker_list):
         except Exception as e:
             print(f'{ticker_nm} fundamental fail: {str(e)}')
 
-    save_to_csv(all_data, file_name)
+    save_to_csv(all_data, file_name, today_date)
+
+if __name__ == "__main__":
+    ticker_list_df = get_ticker_list()
+    collect_ohlcv_data(ticker_list_df)

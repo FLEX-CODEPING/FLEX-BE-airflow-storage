@@ -5,7 +5,7 @@ import pendulum
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from modules.stock.stock_data_collection import (
     get_ticker_list,
@@ -15,9 +15,12 @@ from modules.stock.stock_data_collection import (
 )
 from modules.stock.stock_data_loader import load_csv_to_mysql
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'modules', 'stock', 'utils'))
+from date_util import is_weekday_and_not_holiday, get_date
+
 local_tz = pendulum.timezone("Asia/Seoul")
 now = pendulum.now("Asia/Seoul") 
-today_date1 = now.strftime('%Y%m%d')
+today_date = get_date()
 start_date = pendulum.datetime(2024, 11, 1, tz="Asia/Seoul")
 
 default_args = {
@@ -45,10 +48,11 @@ def collect_fundamental_with_tickers(**kwargs):
     kor_ticker_list = kwargs['ti'].xcom_pull(key='kor_ticker_list', task_ids='get_ticker_list')
     collect_fundamental_data(kor_ticker_list)
 
+# 오후 6시에 데이터 수집
 with DAG(
-    dag_id='data_collection_and_loading_dag',
+    dag_id='stock_data_collection_dag',
     default_args=default_args,
-    schedule_interval='0 6 * * *',  
+    schedule_interval='0 18 * * *',  
     catchup=False,
     tags=['pykrx'],
 ) as dag:
@@ -63,7 +67,7 @@ with DAG(
     collect_ohlcv_task = PythonOperator(
         task_id='collect_ohlcv_data',
         python_callable=collect_ohlcv_with_tickers,
-        op_kwargs={'start_date': start_date, 'today_date1': today_date1},
+        op_kwargs={'start_date': start_date, 'today_date': today_date},
         provide_context=True,
         dag=dag,
     )
@@ -71,7 +75,7 @@ with DAG(
     collect_market_cap_task = PythonOperator(
         task_id='collect_market_cap_data',
         python_callable=collect_market_cap_with_tickers,
-        op_kwargs={'start_date': start_date, 'today_date1': today_date1},
+        op_kwargs={'start_date': start_date, 'today_date': today_date},
         provide_context=True,
         dag=dag,
     )
@@ -79,7 +83,7 @@ with DAG(
     collect_fundamental_task = PythonOperator(
         task_id='collect_fundamental_data',
         python_callable=collect_fundamental_with_tickers,
-        op_kwargs={'start_date': start_date, 'today_date1': today_date1},
+        op_kwargs={'start_date': start_date, 'today_date': today_date},
         provide_context=True,
         dag=dag,
     )
@@ -87,9 +91,12 @@ with DAG(
     load_to_mysql_task = PythonOperator(
         task_id='load_csv_to_mysql',
         python_callable=load_csv_to_mysql,
-        op_kwargs={'start_date': start_date, 'today_date1': today_date1},
+        op_kwargs={'start_date': start_date, 'today_date': today_date},
         provide_context=True,
         dag=dag,
     )
 
     get_tickers_task >> [collect_ohlcv_task, collect_market_cap_task, collect_fundamental_task] >> load_to_mysql_task
+
+# for task in [get_tickers_task, collect_ohlcv_task, collect_market_cap_task, collect_fundamental_task]:
+#     task.trigger_rule = 'all_success' if is_weekday_and_not_holiday else 'none'

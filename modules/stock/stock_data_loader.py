@@ -5,8 +5,7 @@ import os
 import sys
 from .database_connection import get_database_connection
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
-from date_util import get_dated_filename
-
+from date_util import get_dated_filename, get_date
 
 
 def load_csv_to_mysql():
@@ -15,7 +14,7 @@ def load_csv_to_mysql():
         return
 
     current_dir = os.path.dirname(__file__)
-    data_stock_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'data', 'stock'))
+    data_stock_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'data', 'stock', 'get_date'))
 
     # csv_path = os.path.join(data_stock_path, 'kor_ticker_list.csv')
     # df = pd.read_csv(csv_path)
