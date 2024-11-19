@@ -73,6 +73,9 @@ def collect_market_cap_data(kor_ticker_list):
             print(f'{stockcode} market cap success')
         except Exception as e:
             print(f'{stockcode} market cap fail: {str(e)}')
+    
+    if 'index' in all_data.columns:
+        all_data.drop(columns=['index'], inplace=True)
 
     save_to_csv(all_data, file_name, today_date)
 
