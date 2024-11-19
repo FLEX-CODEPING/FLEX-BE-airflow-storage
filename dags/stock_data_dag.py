@@ -7,21 +7,21 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from modules.stock.stock_data_collection import (
+from modules.stock.stock_data_collector import (
     get_ticker_list,
     collect_ohlcv_data,
     collect_market_cap_data,
     collect_fundamental_data,
 )
-from modules.stock.stock_data_loader import load_csv_to_mysql
+from modules.stock.stock_data_loader import load_market_cap_data, load_ohlcv_data
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'modules', 'stock', 'utils'))
-from date_util import is_weekday_and_not_holiday, get_date
+from date_util import get_date
 
 local_tz = pendulum.timezone("Asia/Seoul")
 now = pendulum.now("Asia/Seoul") 
 today_date = get_date()
-start_date = pendulum.datetime(2024, 11, 1, tz="Asia/Seoul")
+start_date = now.subtract(days=1)
 
 default_args = {
     'owner': 'airflow',
@@ -47,6 +47,8 @@ def collect_market_cap_with_tickers(**kwargs):
 def collect_fundamental_with_tickers(**kwargs):
     kor_ticker_list = kwargs['ti'].xcom_pull(key='kor_ticker_list', task_ids='get_ticker_list')
     collect_fundamental_data(kor_ticker_list)
+
+
 
 # 오후 6시에 데이터 수집
 with DAG(
@@ -89,8 +91,16 @@ with DAG(
     )
 
     load_to_mysql_task = PythonOperator(
-        task_id='load_csv_to_mysql',
-        python_callable=load_csv_to_mysql,
+        task_id='load_ohlcv_data',
+        python_callable=load_ohlcv_data,
+        op_kwargs={'start_date': start_date, 'today_date': today_date},
+        provide_context=True,
+        dag=dag,
+    )
+
+    load_to_mysql_task = PythonOperator(
+        task_id='load_market_cap_data',
+        python_callable=load_market_cap_data,
         op_kwargs={'start_date': start_date, 'today_date': today_date},
         provide_context=True,
         dag=dag,

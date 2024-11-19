@@ -24,18 +24,16 @@ from datetime import datetime
 
 def get_ticker_list():
     """KOSPI와 KOSDAQ의 종목 리스트를 가져오는 함수."""
-    today_date = datetime.now().strftime('%Y%m%d')
+    today_date = get_date()
     market_list = ['KOSPI', 'KOSDAQ']
     kor_ticker_list_df = pd.DataFrame()
 
     for market_nm in market_list:
         ticker_list = stock.get_market_ticker_list(today_date, market=market_nm)
-        print(f'{market_nm} ticker list: {ticker_list}')
         
         for stockcode in ticker_list:
             corp_name = stock.get_market_ticker_name(stockcode)
             print(f'Processing stockcode: {stockcode}, corp_name: {corp_name}')
-            
             df = pd.DataFrame({'stockcode': stockcode, 'corp_name': corp_name, 'market': market_nm}, index=[0])
             kor_ticker_list_df = pd.concat([kor_ticker_list_df, df], ignore_index=True)
 
@@ -65,15 +63,19 @@ def collect_market_cap_data(kor_ticker_list):
     file_name = 'kor_market_cap'
     all_data = pd.DataFrame()
 
-    for ticker_nm in kor_ticker_list:
+    for stockcode in kor_ticker_list:
         try:
-            df_raw = stock.get_market_cap(today_date, today_date, ticker_nm)
+            print(f"{stockcode}")
+            df_raw = stock.get_market_cap(today_date, today_date, stockcode)
             df_raw = df_raw.reset_index()
-            df_raw['stockcode'] = ticker_nm
+            df_raw['stockcode'] = stockcode
             all_data = pd.concat([all_data, df_raw])
-            print(f'{ticker_nm} market cap success')
+            print(f'{stockcode} market cap success')
         except Exception as e:
-            print(f'{ticker_nm} market cap fail: {str(e)}')
+            print(f'{stockcode} market cap fail: {str(e)}')
+    
+    if 'index' in all_data.columns:
+        all_data.drop(columns=['index'], inplace=True)
 
     save_to_csv(all_data, file_name, today_date)
 
@@ -83,18 +85,17 @@ def collect_fundamental_data(kor_ticker_list):
     file_name = 'kor_stock_fundamental'
     all_data = pd.DataFrame()
 
-    for ticker_nm in kor_ticker_list:
+    for stockcode in kor_ticker_list:
         try:
-            df_raw = stock.get_market_fundamental(today_date, today_date, ticker_nm)
+            df_raw = stock.get_market_fundamental(today_date, today_date, stockcode)
             df_raw = df_raw.reset_index()
-            df_raw['stockcode'] = ticker_nm
+            df_raw['stockcode'] = stockcode
             all_data = pd.concat([all_data, df_raw])
-            print(f'{ticker_nm} fundamental success')
+            print(f'{stockcode} fundamental success')
         except Exception as e:
-            print(f'{ticker_nm} fundamental fail: {str(e)}')
+            print(f'{stockcode} fundamental fail: {str(e)}')
 
     save_to_csv(all_data, file_name, today_date)
 
 if __name__ == "__main__":
     ticker_list_df = get_ticker_list()
-    collect_ohlcv_data(ticker_list_df)
