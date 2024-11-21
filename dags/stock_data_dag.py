@@ -90,7 +90,7 @@ with DAG(
         dag=dag,
     )
 
-    load_to_mysql_task = PythonOperator(
+    load_ohlcv_to_mysql = PythonOperator(
         task_id='load_ohlcv_data',
         python_callable=load_ohlcv_data,
         op_kwargs={'start_date': start_date, 'today_date': today_date},
@@ -98,7 +98,7 @@ with DAG(
         dag=dag,
     )
 
-    load_to_mysql_task = PythonOperator(
+    load_market_cap_to_mysql = PythonOperator(
         task_id='load_market_cap_data',
         python_callable=load_market_cap_data,
         op_kwargs={'start_date': start_date, 'today_date': today_date},
@@ -106,7 +106,9 @@ with DAG(
         dag=dag,
     )
 
-    get_tickers_task >> [collect_ohlcv_task, collect_market_cap_task, collect_fundamental_task] >> load_to_mysql_task
+    get_tickers_task >> collect_ohlcv_task >> load_ohlcv_to_mysql
+    get_tickers_task >> collect_market_cap_task >> load_market_cap_to_mysql
+    get_tickers_task >> collect_fundamental_task
 
 # for task in [get_tickers_task, collect_ohlcv_task, collect_market_cap_task, collect_fundamental_task]:
 #     task.trigger_rule = 'all_success' if is_weekday_and_not_holiday else 'none'
