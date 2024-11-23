@@ -8,6 +8,7 @@ from airflow.models import TaskInstance
 from modules.news.news_fetcher import NewsFetcher
 from modules.news.content_extractor import ContentExtractor
 from modules.news.constants import XComKeys as XCOM_KEYS
+from modules.news.news_database_connection import get_database_connection
 
 logger = logging.getLogger(__name__)
 
@@ -84,8 +85,8 @@ def extract_contents(**context) -> List[Dict]:
         logger.error(f"본문 추출이 실패한 지점은 {press}-{keyword}: {str(e)}")
         raise
 
-def save_to_csv(**context) -> str:
-    """추출된 컨텐츠를 CSV로 저장"""
+def save_to_rdb_csv(**context) -> str:
+    """추출된 컨텐츠를 RDB와 CSV 파일에 저장"""
     task_instance = context['task_instance']
     press = context['press']
     keyword = context['keyword']
@@ -100,9 +101,29 @@ def save_to_csv(**context) -> str:
         logger.error(f"저장할 컨텐츠 없음: {press} - {keyword}")
         return ''
     
+    date_str = datetime.now().strftime('%Y%m%d')
+
+    df = pd.DataFrame(extracted_contents)
+    logger.info(f"df: {df}")
+
+    engine = get_database_connection()
+    
+    if engine is None:
+        raise ValueError("DB 연결 실패")
+    try:
+        df.to_sql(
+            name='news_articles',
+            con=engine,
+            if_exists='append',
+            index=False
+        )
+
+        logger.info(f"DB 저장 성공: {date_str}, {press}, {keyword}")
+    except Exception as e:
+        logger.error(f"DB에 컨텐츠 저장 실패: {str(e)}")
+    
     try:
         # CSV 파일명 생성
-        date_str = datetime.now().strftime('%Y%m%d')
         filename = f"news_{press}_{keyword}_{date_str}.csv"
         
         # 저장 경로 생성
@@ -113,7 +134,6 @@ def save_to_csv(**context) -> str:
         filepath = os.path.join(save_dir, filename)
         
         # DataFrame 생성 및 저장
-        df = pd.DataFrame(extracted_contents)
         df.to_csv(filepath, index=False, encoding='utf-8-sig')
         
         logger.info(f"Saved {len(extracted_contents)} articles to {filepath}")
