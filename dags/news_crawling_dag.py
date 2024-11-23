@@ -21,7 +21,7 @@ with DAG(
     },
     concurrency=10,
     max_active_runs=1,
-    schedule_interval="0 21 * * *", # 매일 UTC 21시(한국 시간 06시)에 실행
+    schedule_interval="0 6 * * *", # 매일 KST 06시에 실행
     start_date=datetime(2024, 11, 1),
     tags=["news", "crawl", "pipeline"],
 ) as dag:
