@@ -7,7 +7,7 @@ from airflow.utils.task_group import TaskGroup
 import sys
 import os 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from modules.news.tasks import fetch_news, extract_contents, save_to_rdb_csv
+from modules.news.tasks import fetch_news, extract_contents, save_to_rdb_csv, cleanup_old_data
 from modules.news.constants import PRESS_LIST, KEYWORD_LIST
 
 
@@ -29,6 +29,11 @@ with DAG(
     # fetch_complete = DummyOperator(task_id="fetch_complete")
     # extract_complete = DummyOperator(task_id="extract_complete")
     end = DummyOperator(task_id="end")
+
+    cleanup = PythonOperator(
+        task_id="cleanup_old_data",
+        python_callable=cleanup_old_data,
+    )
 
     keyword_groups = []
 
@@ -86,4 +91,4 @@ with DAG(
                 keyword_groups.append(keyword_group)
             
             # 전체 태스크그룹 의존성 설정
-            start >> keyword_groups >> end
+            start >> keyword_groups >> cleanup >> end
