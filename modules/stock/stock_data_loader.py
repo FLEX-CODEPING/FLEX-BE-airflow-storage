@@ -7,7 +7,6 @@ from .database_connection import get_database_connection
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 from date_util import get_dated_filename, get_date
 
-
     # ticker list 저장 
     # csv_path = os.path.join(data_stock_path, 'kor_ticker_list.csv')
     # df = pd.read_csv(csv_path)
@@ -35,6 +34,21 @@ def load_ohlcv_data():
         }, inplace=True)
         
         ohlcv_df['date'] = pd.to_datetime(ohlcv_df['date'], errors='coerce')
+        ohlcv_df['ticker'] = ohlcv_df['stockcode'] 
+
+        with mysql_engine.connect() as connection:
+            stock_mapping = pd.read_sql('SELECT stockcode, stockcode AS ticker FROM stock', con=connection)
+            stockcode_set = set(stock_mapping['stockcode'])
+
+        ohlcv_df = ohlcv_df[ohlcv_df['stockcode'].isin(stockcode_set)]
+
+        ohlcv_df.drop(columns=['ticker'], inplace=True)
+
+        ohlcv_df = ohlcv_df.merge(
+            stock_mapping,
+            on='stockcode',
+            how='inner'
+        )
         
         ohlcv_df.to_sql(
             name='stock_ohlcv',
@@ -44,7 +58,8 @@ def load_ohlcv_data():
             dtype={
                 'date': types.Date(), 'open_price': types.Float(), 'high_price': types.Float(),
                 'low_price': types.Float(), 'close_price': types.Float(), 'volume': types.BigInteger(),
-                'change_rate': types.Float(), 'stockcode': types.String(50)
+                'change_rate': types.Float(), 'stockcode': types.String(50),
+                'ticker': types.String(50) 
             }
         )
         print("kor_stock_ohlcv.csv 파일이 성공적으로 적재되었습니다.")
@@ -67,7 +82,22 @@ def load_market_cap_data():
             '거래대금': 'trading_value', '상장주식수': 'listed_shares', '종목코드': 'stockcode'
         }, inplace=True)
 
-        market_cap_df['date'] = pd.to_datetime(market_cap_df['date'], errors='coerce')
+        market_cap_df['date'] = pd.to_datetime(['date'], errors='coerce')
+        market_cap_df['ticker'] = market_cap_df['stockcode'] 
+
+        with mysql_engine.connect() as connection:
+            stock_mapping = pd.read_sql('SELECT stockcode, stockcode AS ticker FROM stock', con=connection)
+            stockcode_set = set(stock_mapping['stockcode'])
+
+        market_cap_df = market_cap_df[market_cap_df['stockcode'].isin(stockcode_set)]
+
+        market_cap_df.drop(columns=['ticker'], inplace=True)
+
+        market_cap_df = market_cap_df.merge(
+            stock_mapping,
+            on='stockcode',
+            how='inner'
+        )
 
         market_cap_df.to_sql(
             name='stock_market_cap',
@@ -77,7 +107,8 @@ def load_market_cap_data():
             dtype={
                 'date': types.Date(), 'market_cap': types.BigInteger(),
                 'volume': types.BigInteger(), 'trading_value': types.BigInteger(),
-                'listed_shares': types.BigInteger(), 'stockcode': types.String(50)
+                'listed_shares': types.BigInteger(), 'stockcode': types.String(50),
+                'ticker': types.String(50) 
             }
         )
         print("kor_market_cap.csv 파일이 성공적으로 적재되었습니다.")
