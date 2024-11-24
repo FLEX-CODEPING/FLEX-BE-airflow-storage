@@ -5,7 +5,7 @@ from airflow.operators.dummy_operator import DummyOperator
 import sys
 import os 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from modules.news.tasks import cleanup_old_data
+from modules.news.cleanup_tasks import cleanup_old_data
 
 with DAG(
     dag_id="news_cleanup",

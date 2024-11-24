@@ -7,7 +7,7 @@ from airflow.utils.task_group import TaskGroup
 import sys
 import os 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from modules.news.tasks import fetch_news, extract_contents, save_to_rdb_csv
+from modules.news.crawling_tasks import fetch_news, extract_contents, save_to_rdb_csv
 from modules.news.constants import PRESS_LIST, KEYWORD_LIST
 
 
