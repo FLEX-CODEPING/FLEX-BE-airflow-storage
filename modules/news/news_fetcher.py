@@ -18,7 +18,7 @@ class NewsFetcher:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36'
         }
 
-    def fetch_news(self, period: int, keyword: str, press: str, total_article_num: int = 3) -> Dict:
+    def fetch_news(self, period: int, keyword: str, press: str, total_article_num: int = 6) -> Dict:
         """뉴스 피드 수집"""
         try:
             logger.info(f"{press}를 위한 뉴스 수집, 사용한 키워드: {keyword}")
