@@ -1,4 +1,6 @@
 data/news/**
 data/stock/**
-modules/news/__pycache__/**
+airflow/modules/news/__pycache__/**
+airflow/modules/stock/__pycache__/**
 venv/**
+.env
