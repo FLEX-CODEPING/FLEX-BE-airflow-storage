@@ -1,0 +1,4 @@
+data/news/**
+data/stock/**
+modules/news/__pycache__/**
+venv/**
