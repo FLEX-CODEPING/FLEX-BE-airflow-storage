@@ -10,8 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from modules.stock.stock_data_collector import (
     get_ticker_list,
     collect_ohlcv_data,
-    collect_market_cap_data,
-    collect_fundamental_data,
+    collect_market_cap_data
 )
 from modules.stock.stock_data_loader import load_market_cap_data, load_ohlcv_data
 
@@ -43,11 +42,6 @@ def collect_ohlcv_with_tickers(**kwargs):
 def collect_market_cap_with_tickers(**kwargs):
     kor_ticker_list = kwargs['ti'].xcom_pull(key='kor_ticker_list', task_ids='get_ticker_list')
     collect_market_cap_data(kor_ticker_list)
-
-def collect_fundamental_with_tickers(**kwargs):
-    kor_ticker_list = kwargs['ti'].xcom_pull(key='kor_ticker_list', task_ids='get_ticker_list')
-    collect_fundamental_data(kor_ticker_list)
-
 
 
 # 오후 6시에 데이터 수집
@@ -82,14 +76,6 @@ with DAG(
         dag=dag,
     )
 
-    collect_fundamental_task = PythonOperator(
-        task_id='collect_fundamental_data',
-        python_callable=collect_fundamental_with_tickers,
-        op_kwargs={'start_date': start_date, 'today_date': today_date},
-        provide_context=True,
-        dag=dag,
-    )
-
     load_ohlcv_to_mysql = PythonOperator(
         task_id='load_ohlcv_data',
         python_callable=load_ohlcv_data,
@@ -106,9 +92,10 @@ with DAG(
         dag=dag,
     )
 
-    get_tickers_task >> collect_ohlcv_task >> load_ohlcv_to_mysql
-    get_tickers_task >> collect_market_cap_task >> load_market_cap_to_mysql
-    get_tickers_task >> collect_fundamental_task
+    get_tickers_task >> [
+        collect_ohlcv_task, 
+        collect_market_cap_task
+    ]
 
-# for task in [get_tickers_task, collect_ohlcv_task, collect_market_cap_task, collect_fundamental_task]:
-#     task.trigger_rule = 'all_success' if is_weekday_and_not_holiday else 'none'
+    collect_ohlcv_task >> load_ohlcv_to_mysql
+    collect_market_cap_task >> load_market_cap_to_mysql

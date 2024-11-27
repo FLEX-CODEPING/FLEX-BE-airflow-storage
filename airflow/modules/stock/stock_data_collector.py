@@ -45,7 +45,7 @@ def collect_ohlcv_data(kor_ticker_list):
     file_name = 'kor_stock_ohlcv'
     all_data = pd.DataFrame()
 
-    for stockcode in kor_ticker_list:  # 'stockcode' 컬럼이 아니라 직접 리스트에서 반복
+    for stockcode in kor_ticker_list: 
         try:
             df_raw = stock.get_market_ohlcv(today_date, today_date, stockcode)
             df_raw = df_raw.reset_index()
@@ -94,6 +94,9 @@ def collect_fundamental_data(kor_ticker_list):
             print(f'{stockcode} fundamental success')
         except Exception as e:
             print(f'{stockcode} fundamental fail: {str(e)}')
+
+    if 'index' in all_data.columns:
+        all_data.drop(columns=['index'], inplace=True)
 
     save_to_csv(all_data, file_name, today_date)
 
