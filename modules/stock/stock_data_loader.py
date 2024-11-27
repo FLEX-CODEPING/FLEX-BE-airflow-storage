@@ -3,7 +3,7 @@ import sqlalchemy
 from sqlalchemy import types
 import os
 import sys
-from .mysql_connection import get_mysql_connection
+from ...infrastructure.mysql.mysql_connection import get_mysql_connection
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 from date_util import get_dated_filename, get_date
 
