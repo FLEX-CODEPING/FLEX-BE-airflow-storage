@@ -7,8 +7,10 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from modules.stock.stock_data_collector import collect_fundamental_data
-from modules.stock.stock_data_loader import load_market_cap_data, load_ohlcv_data
+from airflow.modules.stock.stock_data_collector import (
+    collect_fundamental_data,
+    get_ticker_list
+)
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'modules', 'stock', 'utils'))
 from date_util import get_date
@@ -24,6 +26,12 @@ default_args = {
     'retries': 0,
     'catchup': False
 }
+
+def get_tickers_and_return(**kwargs):
+    kor_ticker_list_df = get_ticker_list()
+    kor_ticker_list = kor_ticker_list_df['stockcode'].tolist()
+    kwargs['ti'].xcom_push(key='kor_ticker_list', value=kor_ticker_list)
+    return kor_ticker_list
 
 def collect_fundamental_with_tickers(**kwargs):
     kor_ticker_list = kwargs['ti'].xcom_pull(key='kor_ticker_list', task_ids='get_ticker_list')
