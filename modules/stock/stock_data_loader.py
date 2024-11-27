@@ -3,7 +3,7 @@ import sqlalchemy
 from sqlalchemy import types
 import os
 import sys
-from .database_connection import get_database_connection
+from .mysql_connection import get_mysql_connection
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 from date_util import get_dated_filename, get_date
 
@@ -19,7 +19,7 @@ from date_util import get_dated_filename, get_date
     #           })
 
 def load_ohlcv_data():
-    mysql_engine = get_database_connection()
+    mysql_engine = get_mysql_connection()
     if not mysql_engine:
         return
 
@@ -53,7 +53,7 @@ def load_ohlcv_data():
         print(f"kor_stock_ohlcv.csv 파일 처리 중 오류 발생: {e}")
 
 def load_market_cap_data():
-    mysql_engine = get_database_connection()
+    mysql_engine = get_mysql_connection()
     if not mysql_engine:
         return
 
