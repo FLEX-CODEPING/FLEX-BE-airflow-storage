@@ -3,8 +3,7 @@ import sqlalchemy
 from sqlalchemy import types
 import os
 import sys
-from ....infrastructure.mysql.mysql_connection import get_mysql_connection
-sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
+from infrastructure.mysql.mysql_connection import get_mysql_connection
 from airflow.modules.stock.utils.date_util import get_dated_filename, get_date
 
     # ticker list 저장 
