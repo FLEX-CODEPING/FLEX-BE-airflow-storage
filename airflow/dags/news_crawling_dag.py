@@ -7,7 +7,7 @@ from airflow.utils.task_group import TaskGroup
 import sys
 import os 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from modules.news.tasks import fetch_news, extract_contents, save_to_csv
+from modules.news.crawling_tasks import fetch_news, extract_contents, save_to_rdb_csv
 from modules.news.constants import PRESS_LIST, KEYWORD_LIST
 
 
@@ -21,13 +21,11 @@ with DAG(
     },
     concurrency=10,
     max_active_runs=1,
-    schedule_interval="0 21 * * *", # 매일 UTC 21시(한국 시간 06시)에 실행
+    schedule_interval="0 6 * * *", # 매일 KST 06시에 실행
     start_date=datetime(2024, 11, 1),
     tags=["news", "crawl", "pipeline"],
 ) as dag:
     start = DummyOperator(task_id="start")
-    # fetch_complete = DummyOperator(task_id="fetch_complete")
-    # extract_complete = DummyOperator(task_id="extract_complete")
     end = DummyOperator(task_id="end")
 
     keyword_groups = []
@@ -70,7 +68,7 @@ with DAG(
             for press in PRESS_LIST:
                 save = PythonOperator(
                     task_id=f'save_content_{press}',
-                    python_callable=save_to_csv,
+                    python_callable=save_to_rdb_csv,
                     provide_context=True,
                     op_kwargs={
                         'press': press,

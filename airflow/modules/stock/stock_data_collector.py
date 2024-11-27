@@ -10,12 +10,12 @@ from date_util import get_dated_filename, get_date
 
 def save_to_csv(df, file_name, date):
     current_dir = os.path.dirname(__file__)
-    data_stock_path = os.path.join(current_dir, '..', '..', 'data', 'stock', date)
-    if not os.path.exists(data_stock_path):
-        os.makedirs(data_stock_path)
+    stock_data_path = os.path.join(current_dir, '..', '..', 'data', 'stock', date)
+    if not os.path.exists(stock_data_path):
+        os.makedirs(stock_data_path)
 
     dated_file_name = get_dated_filename(file_name)
-    file_path = os.path.join(data_stock_path, dated_file_name)
+    file_path = os.path.join(stock_data_path, dated_file_name)
     df.to_csv(file_path, index=False, mode='w')
     print(f"Data saved to {file_path}")
 
