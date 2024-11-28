@@ -4,9 +4,7 @@ from datetime import datetime
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
-
-from date_util import get_dated_filename, get_date
+from .utils.date_util import get_dated_filename, get_date
 
 def save_to_csv(df, file_name, date):
     current_dir = os.path.dirname(__file__)
@@ -59,7 +57,7 @@ def collect_ohlcv_data(kor_ticker_list):
 
 def collect_market_cap_data(kor_ticker_list):
     """종목별 시가총액 데이터를 수집하는 함수."""
-    today_date = get_date()
+    today_date = '20241127'
     file_name = 'kor_market_cap'
     all_data = pd.DataFrame()
 
@@ -81,7 +79,7 @@ def collect_market_cap_data(kor_ticker_list):
 
 def collect_fundamental_data(kor_ticker_list):
     """종목별 기본 재무 데이터를 수집하는 함수."""
-    today_date = get_date()
+    today_date = '20241127'
     file_name = 'kor_stock_fundamental'
     all_data = pd.DataFrame()
 
