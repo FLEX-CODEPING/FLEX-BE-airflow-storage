@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.empty import EmptyOperator
 from airflow.models.baseoperator import chain, cross_downstream
 from airflow.utils.task_group import TaskGroup
 import sys
@@ -25,8 +25,8 @@ with DAG(
     start_date=datetime(2024, 11, 1),
     tags=["news", "crawl", "pipeline"],
 ) as dag:
-    start = DummyOperator(task_id="start")
-    end = DummyOperator(task_id="end")
+    start = EmptyOperator(task_id="start")
+    end = EmptyOperator(task_id="end")
 
     keyword_groups = []
 

@@ -1,7 +1,7 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.empty import EmptyOperator
 import sys
 import os 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -20,13 +20,13 @@ with DAG(
     start_date=datetime(2024, 11, 27),
     tags=["news", "crawl", "pipeline"],
 ) as dag:
-    start = DummyOperator(task_id="start")
+    start = EmptyOperator(task_id="start")
 
     cleanup = PythonOperator(
         task_id='cleanup_old_data',
         python_callable=cleanup_old_data
     )
     
-    end = DummyOperator(task_id="end")
+    end = EmptyOperator(task_id="end")
 
     start >> cleanup >> end

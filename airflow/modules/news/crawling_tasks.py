@@ -20,12 +20,21 @@ def fetch_news(keyword: str, press: str, **context) -> Dict:
         fetcher = NewsFetcher()
         # ThreadPoolExecutor를 사용한 병렬 처리
         with ThreadPoolExecutor(max_workers=3) as executor:
-            result = executor.submit(
-                fetcher.fetch_news, 
-                period=1, 
-                keyword=keyword, 
-                press=press
-            ).result()
+            if keyword == "주가지수":
+                keyword = "주가%20지수"
+                result = executor.submit(
+                    fetcher.fetch_news, 
+                    period=1, 
+                    keyword=keyword, 
+                    press=press
+                ).result()
+            else:
+                result = executor.submit(
+                    fetcher.fetch_news, 
+                    period=1, 
+                    keyword=keyword, 
+                    press=press
+                ).result()
 
         task_instance: TaskInstance = context['task_instance']
         task_instance.xcom_push(key=XCOM_KEYS.FETCH_RESULT, value=result)
