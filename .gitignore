@@ -1,5 +1,6 @@
-data/news/**
-data/stock/**
+airflow/data/news/**
+airflow/data/stock/**
+crawler/data/**
 airflow/modules/news/__pycache__/**
 airflow/modules/stock/__pycache__/**
 venv/**
