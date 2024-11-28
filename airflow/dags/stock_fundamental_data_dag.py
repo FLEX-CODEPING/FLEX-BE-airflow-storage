@@ -7,7 +7,7 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from airflow.modules.stock.stock_data_collector import (
+from modules.stock.stock_data_collector import (
     collect_fundamental_data,
     get_ticker_list
 )
