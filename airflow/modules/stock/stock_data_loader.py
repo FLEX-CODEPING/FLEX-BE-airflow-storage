@@ -1,10 +1,9 @@
 import pandas as pd
 import sqlalchemy
 from sqlalchemy import types
-import os
-import sys
 from infrastructure.mysql.mysql_connection import get_mysql_connection
 from airflow.modules.stock.utils.date_util import get_dated_filename, get_date
+import os
 
     # ticker list 저장 
     # csv_path = os.path.join(data_stock_path, 'kor_ticker_list.csv')
