@@ -6,7 +6,7 @@ import sys
 import os
 import json
 from datetime import timedelta
-from utils.date_util import get_dated_filename, get_date
+from .utils.date_util import get_dated_filename, get_date
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from infrastructure.mysql.mysql_connection import get_mysql_connection
 from infrastructure.redis.redis_connection import get_redis_connection

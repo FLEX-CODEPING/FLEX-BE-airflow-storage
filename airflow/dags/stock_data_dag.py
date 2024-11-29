@@ -50,7 +50,7 @@ with DAG(
     default_args=default_args,
     schedule_interval='0 18 * * *',  
     catchup=False,
-    tags=['pykrx'],
+    tags=['pykrx', 'pipeline'],
 ) as dag:
 
     get_tickers_task = PythonOperator(
