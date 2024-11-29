@@ -11,9 +11,11 @@ from modules.stock.stock_data_collector import (
     collect_fundamental_data,
     get_ticker_list
 )
+from modules.stock.stock_data_loader import (
+    load_fundamental_data
+)
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'modules', 'stock', 'utils'))
-from date_util import get_date
+from modules.stock.utils.date_util import get_date
 
 local_tz = pendulum.timezone("Asia/Seoul")
 now = pendulum.now("Asia/Seoul")
@@ -43,7 +45,7 @@ with DAG(
     default_args=default_args,
     schedule_interval='0 18 * * *',  
     catchup=False,
-    tags=['pykrx'],
+    tags=['pykrx', 'pipeline'],
 ) as dag:
 
     get_tickers_task = PythonOperator(
@@ -61,4 +63,12 @@ with DAG(
         dag=dag,
     )
 
-    get_tickers_task >> collect_fundamental_task
+    load_fundamental_to_redis = PythonOperator(
+        task_id='load_fundamental_data',
+        python_callable=load_fundamental_data,
+        op_kwargs={'start_date': start_date, 'today_date': today_date},
+        provide_context=True,
+        dag=dag,
+    )
+
+    get_tickers_task >> collect_fundamental_task >> load_fundamental_to_redis
