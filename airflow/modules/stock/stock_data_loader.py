@@ -4,9 +4,12 @@ from sqlalchemy import types
 import logging
 import sys
 import os
-from .utils.date_util import get_dated_filename, get_date
+import json
+from datetime import timedelta
+from utils.date_util import get_dated_filename, get_date
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from infrastructure.mysql.mysql_connection import get_mysql_connection
+from infrastructure.redis.redis_connection import get_redis_connection
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -98,11 +101,6 @@ def load_ohlcv_data():
         logging.error(f"kor_stock_ohlcv.csv 파일 처리 중 오류 발생: {e}", exc_info=True)
 
 def load_market_cap_data():
-    mysql_engine = get_mysql_connection()
-    if not mysql_engine:
-        logging.error("MySQL 연결을 생성할 수 없습니다.")
-        return
-
     current_dir = os.path.dirname(__file__)
     data_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'data', 'stock', get_date()))
     
@@ -130,6 +128,11 @@ def load_market_cap_data():
         # stock_id 생성
         market_cap_df['stock_id'] = market_cap_df['stockcode'] 
 
+        mysql_engine = get_mysql_connection()
+        if not mysql_engine:
+            logging.error("MySQL 연결을 생성할 수 없습니다.")
+            return
+
         with mysql_engine.connect() as connection:
             stock_mapping = pd.read_sql('SELECT stockcode, stockcode AS stock_id FROM stock', con=connection)
             stockcode_set = set(stock_mapping['stockcode'])
@@ -142,7 +145,6 @@ def load_market_cap_data():
         # stock_id 컬럼 제거
         market_cap_df.drop(columns=['stock_id'], inplace=True)
 
-        # 데이터베이스에 적재
         market_cap_df = market_cap_df.merge(
             stock_mapping,
             on='stockcode',
@@ -169,3 +171,46 @@ def load_market_cap_data():
 
     except Exception as e:
         logging.error(f"kor_market_cap.csv 파일 처리 중 오류 발생: {e}", exc_info=True)
+
+expiration_days = int(os.getenv('FUNDAMENTAL_DATA_EXPIRATION', 3))
+
+def load_fundamental_data():
+    current_dir = os.path.dirname(__file__)
+    data_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'data', 'stock', get_date()))
+    
+    try:
+        fundamental_data_csv_path = os.path.join(data_path, get_dated_filename('kor_stock_fundamental'))
+        logging.info(f"CSV 파일 경로: {fundamental_data_csv_path}")
+
+        # CSV 파일 읽기
+        fundamental_data_df = pd.read_csv(fundamental_data_csv_path)
+        logging.info(f"CSV 파일에서 {len(fundamental_data_df)}개의 행을 읽었습니다.")
+
+        fundamental_data_df.rename(columns={
+            '날짜': 'date'
+        }, inplace=True)
+
+        # 날짜 형식 변환
+        fundamental_data_df['date'] = pd.to_datetime(fundamental_data_df['date'], errors='coerce')
+        
+        # stock_id 생성
+        fundamental_data_df['stock_id'] = fundamental_data_df['stockcode']
+
+        redis = get_redis_connection()
+
+        for _, row in fundamental_data_df.iterrows():   
+            date_str = row['date'].strftime('%Y-%m-%d')
+            
+            key = f"fundamental:{row['stockcode']}:{date_str}"
+            data = row.to_dict()
+            data['date'] = date_str
+
+            json_data = json.dumps(data)
+            
+            expiration_time = timedelta(days=expiration_days).total_seconds()
+            
+            redis.setex(key, int(expiration_time), json_data)
+        logging.info("kor_stock_fundamental 파일이 성공적으로 적재되었습니다.")
+
+    except Exception as e:
+        logging.error(f"kor_stock_fundamental 파일 처리 중 오류 발생: {e}", exc_info=True)
