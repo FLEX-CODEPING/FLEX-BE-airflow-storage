@@ -1,21 +1,10 @@
-import os
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
-
-# .env 파일 로드
-load_dotenv()
-
-# 환경 변수 가져오기
-DATABASE_USER = os.getenv("DATABASE_USERNAME")
-DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
-DATABASE_HOST = os.getenv("DATABASE_HOST")
-DATABASE_PORT = os.getenv("DATABASE_PORT")
-DATABASE_SCHEMA = os.getenv("DATABASE_NEWS_SCHEMA")
+from modules.news.constants import settings
 
 
 def get_database_connection():
     try:
-        connection_info = f"mysql+pymysql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_SCHEMA}"
+        connection_info = f"mysql+pymysql://{settings.DATABASE_USERNAME}:{settings.DATABASE_PASSWORD}@{settings.DATABASE_HOST}:{settings.DATABASE_PORT}/{settings.DATABASE_NEWS_SCHEMA}"
         if not connection_info:
             raise ValueError("데이터 베이스 연결정보가 없습니다.")
 
