@@ -17,7 +17,7 @@ class ContentExtractor:
 
     def _load_site_structures(self) -> Dict:
         try:
-            base_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))))
             structure_path = os.path.join(base_path, 'resources', 'news_site_structures.json')
             
             with open(structure_path, 'r', encoding='utf-8') as f:
