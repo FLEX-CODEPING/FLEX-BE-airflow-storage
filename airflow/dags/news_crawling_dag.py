@@ -24,6 +24,7 @@ with DAG(
     schedule_interval="0 6 * * *", # 매일 KST 06시에 실행
     start_date=datetime(2024, 11, 1),
     tags=["news", "crawl", "pipeline"],
+    catchup=False
 ) as dag:
     start = EmptyOperator(task_id="start")
     end = EmptyOperator(task_id="end")
