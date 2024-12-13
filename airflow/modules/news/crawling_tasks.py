@@ -1,16 +1,17 @@
+import asyncio
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 import pandas as pd
 import logging
-from typing import Dict, List
+from typing import Any, Coroutine, Dict, List, Union
 from concurrent.futures import ThreadPoolExecutor
 from airflow.models import TaskInstance
+from modules.news.dtos import NewsArticleDTO
 from modules.news.news_fetcher import NewsFetcher
 from modules.news.content_extractor import ContentExtractor
+from modules.news.individual_summarizer import IndividualSummarizer
 from modules.news.constants import XComKeys as XCOM_KEYS
 from modules.news.news_database_connection import get_database_connection
-from sqlalchemy import text
-import shutil
 
 logger = logging.getLogger(__name__)
 
@@ -96,25 +97,65 @@ def extract_contents(**context) -> List[Dict]:
         logger.error(f"본문 추출이 실패한 지점은 {press}-{keyword}: {str(e)}")
         raise
 
+def summarize_contents(**context) -> Union[Coroutine[Any, Any, List[str]], List[str]]:
+    """개별 기사 요약 태스크"""
+    try:
+        task_instance: TaskInstance = context['task_instance']
+        press: str = context['press']
+        keyword: str = context['keyword']
+        
+        extracted_contents = task_instance.xcom_pull(
+            task_ids=f'news_process_{keyword}.extract_content_{press}',
+            key=XCOM_KEYS.EXTRACT_RESULT
+        )
+        extracted_contents = extracted_contents.to_dict("records")
+        if extracted_contents is None or (isinstance(extracted_contents, pd.DataFrame) and extracted_contents.empty):
+            logger.error(f"요약할 컨텐츠 없음: {press} - {keyword}")
+            raise
+
+        # summary 필드가 NaN인 경우 None으로 변환
+        for row in extracted_contents:
+            if pd.isna(row['summary']):
+                row['summary'] = None
+        
+        extracted_contents = [NewsArticleDTO(**row) for row in extracted_contents]
+        
+        summarizer = IndividualSummarizer()
+        results = asyncio.run(summarizer.summarize(extracted_contents, keyword))
+        
+        task_instance.xcom_push(key=XCOM_KEYS.SUMMARY_RESULT, value=results)
+        return results
+    except Exception as e:
+        logger.error(f"컨텐츠 요약이 실패한 지점은 {press}-{keyword}: {str(e)}")
+        raise
+
 def save_to_rdb_csv(**context) -> str:
     """추출된 컨텐츠를 RDB와 CSV 파일에 저장"""
-    task_instance = context['task_instance']
-    press = context['press']
-    keyword = context['keyword']
+    task_instance: TaskInstance = context['task_instance']
+    press: str = context['press']
+    keyword: str = context['keyword']
     
     # 이전 태스크에서 결과 가져오기
     extracted_contents = task_instance.xcom_pull(
         task_ids=f'news_process_{keyword}.extract_content_{press}',
         key=XCOM_KEYS.EXTRACT_RESULT
     )
+    summary_results = task_instance.xcom_pull(
+        task_ids=f'news_process_{keyword}.summarize_content_{press}',
+        key=XCOM_KEYS.SUMMARY_RESULT
+    )
     
-    if not extracted_contents:
+    if (extracted_contents is None or (isinstance(extracted_contents, pd.DataFrame) and extracted_contents.empty)) or not summary_results:
         logger.error(f"저장할 컨텐츠 없음: {press} - {keyword}")
         return ''
     
     date_str = datetime.now().strftime('%Y%m%d')
 
     df = pd.DataFrame(extracted_contents)
+    # 요약 결과 추가
+    df['summary'] = summary_results
+    # 본문을 100자로 제한
+    df['content'] = df['content'].str.slice(0, 100)
     logger.info(f"df: {df}")
 
     engine = get_database_connection()

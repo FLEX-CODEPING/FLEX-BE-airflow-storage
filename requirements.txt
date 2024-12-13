@@ -188,3 +188,5 @@ xlrd==2.0.1
 yarl==1.17.1
 zipp==3.20.2
 zope.interface==7.1.1
+openai==1.52.0
+httpx==0.27.2

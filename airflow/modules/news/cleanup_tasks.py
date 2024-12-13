@@ -1,14 +1,7 @@
 import os
 from datetime import datetime, timedelta
-import pandas as pd
 import logging
-from typing import Dict, List
-from concurrent.futures import ThreadPoolExecutor
-from airflow.models import TaskInstance
-from modules.news.news_fetcher import NewsFetcher
-from modules.news.content_extractor import ContentExtractor
-from modules.news.constants import XComKeys as XCOM_KEYS
-from modules.news.news_database_connection import get_database_connection
+from news_database_connection import get_database_connection
 from sqlalchemy import text
 import shutil
 
@@ -34,7 +27,7 @@ def cleanup_files(cutoff_datetime: datetime) -> None:
     """7일 이상 된 CSV 파일 삭제"""
     try:
         # 기본 경로 설정
-        base_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
         data_dir = os.path.join(base_path, 'data', 'news')
         
         # 키워드별 디렉토리 순회
