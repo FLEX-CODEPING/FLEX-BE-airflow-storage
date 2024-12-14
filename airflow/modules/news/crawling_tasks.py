@@ -108,20 +108,21 @@ def summarize_contents(**context) -> Union[Coroutine[Any, Any, List[str]], List[
             task_ids=f'news_process_{keyword}.extract_content_{press}',
             key=XCOM_KEYS.EXTRACT_RESULT
         )
-        extracted_contents = extracted_contents.to_dict("records")
-        if extracted_contents is None or (isinstance(extracted_contents, pd.DataFrame) and extracted_contents.empty):
-            logger.error(f"요약할 컨텐츠 없음: {press} - {keyword}")
-            raise
-
-        # summary 필드가 NaN인 경우 None으로 변환
-        for row in extracted_contents:
-            if pd.isna(row['summary']):
-                row['summary'] = None
         
-        extracted_contents = [NewsArticleDTO(**row) for row in extracted_contents]
+        if extracted_contents is None:
+            logger.error(f"요약할 컨텐츠 없음: {press} - {keyword}")
+            raise ValueError("No contents to summarize")
+
+        # 리스트의 각 딕셔너리 항목에 대해 summary 필드 처리
+        for content in extracted_contents:
+            if 'summary' not in content or content['summary'] is None:
+                content['summary'] = None
+        
+        # NewsArticleDTO 리스트로 변환
+        article_dtos = [NewsArticleDTO(**content) for content in extracted_contents]
         
         summarizer = IndividualSummarizer()
-        results = asyncio.run(summarizer.summarize(extracted_contents, keyword))
+        results = asyncio.run(summarizer.summarize(article_dtos, keyword))
         
         task_instance.xcom_push(key=XCOM_KEYS.SUMMARY_RESULT, value=results)
         return results
