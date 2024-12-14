@@ -10,11 +10,11 @@ DATABASE_USER = os.getenv('DATABASE_USERNAME')
 DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
 DATABASE_HOST = os.getenv('DATABASE_HOST')
 DATABASE_PORT = os.getenv('DATABASE_PORT')
-DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA')
+DATABASE_STOCK_SCHEMA = os.getenv('DATABASE_STOCK_SCHEMA')
 
 def get_mysql_connection():
     try:
-        connection_info = f"mysql+pymysql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_SCHEMA}"
+        connection_info = f"mysql+pymysql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_STOCK_SCHEMA}"
         if not connection_info:
             raise ValueError("데이터 베이스 연결정보가 없습니다.")
         
