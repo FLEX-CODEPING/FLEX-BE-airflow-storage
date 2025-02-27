@@ -43,13 +43,3 @@ def process_csv_and_save_to_db(csv_file_path, engine):
             
             # 이미지 URL 저장
             save_image_url(stockcode, image_url, engine)
-
-# if __name__ == "__main__":
-#     mysql_engine = get_database_connection()
-
-#     current_dir = os.path.dirname(__file__)
-#     csv_file_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'data', 'stock', 'kor_ticker_list.csv'))
-
-#     # CSV 파일 처리 및 데이터베이스에 저장
-#     if mysql_engine:
-#         process_csv_and_save_to_db(csv_file_path, mysql_engine)

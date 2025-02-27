@@ -8,15 +8,17 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from modules.stock.mysql_connection import get_mysql_connection
 import dart_fss as dart
+from dotenv import load_dotenv
+
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from models.corp_info import Base, CorpInfo
 
 def set_dart_client():
-    api_key = 'd894c5ecbe22452ece57ed1d1af564e9d0da5443'
-    dart.set_api_key(api_key=api_key)
-
-    return dart
+   load_dotenv()
+   api_key = os.getenv('API_KEY', 'localhost') 
+   dart.set_api_key(api_key=api_key)
+   return dart
 
 def get_valid_df():
     all = dart.api.filings.get_corp_code()
@@ -64,7 +66,6 @@ def save_corp_info(corp_data):
         
     except Exception as e:
         print(f"Error inserting data for {corp_data['stock_code']}: {e}")
-
 
 
 if __name__ == "__main__":

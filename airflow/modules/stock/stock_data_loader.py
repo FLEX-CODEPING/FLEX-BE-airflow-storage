@@ -13,15 +13,6 @@ from infrastructure.redis.redis_connection import get_redis_connection
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-    # ticker list 저장 
-    # csv_path = os.path.join(data_stock_path, 'kor_ticker_list.csv')
-    # df = pd.read_csv(csv_path)
-    # df.to_sql('stock', con=mysql_engine, if_exists='append', index=False,
-    #           dtype={
-    #               'stockcode': types.VARCHAR(50),
-    #               'corp_name': types.VARCHAR(50),
-    #               'market': types.VARCHAR(50)
-    #           })
 
 def load_ohlcv_data():
     mysql_engine = get_mysql_connection()
